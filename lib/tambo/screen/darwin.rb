@@ -2,25 +2,65 @@
 
 module Tambo
   module Screen
+    require "io/console"
+    require "termios"
+
     class Darwin
-      require "io/console"
-      require "termios"
       def initialize
         Logger.clear_debug_log
         @terminfo = Tambo::Terminfo.new(ENV["TERM"])
-        @buffer = StringIO.new
         @charset = "UTF-8"
-        @input = File.open("/dev/tty", "r") # read only
-        @output = File.open("/dev/tty", "w") # write only
-        # @output = IO.console
+        @input = IO.console
+        @output = IO.console
         @cell_buffer = Tambo::CellBuffer.new(@terminfo)
         width = @terminfo.columns
         height = @terminfo.lines
         set_noncanonical_mode
-
         width, height = winsize
         @cell_buffer.resize(width, height)
         resize
+
+        @event_receiver = Ractor.new name: "event_receiver" do
+          loop do
+            event = Ractor.receive
+            Ractor.yield({ event: event })
+          end
+        end
+
+        @key_receiver = Ractor.new name: "key_receiver" do
+          loop do
+            chunk = Ractor.receive
+            Ractor.yield({ chunk: chunk })
+          end
+        end
+
+        @main_loop =
+          Ractor.new [@event_receiver, @key_receiver] do |shared|
+            event_receiver = shared[0]
+            key_receiver = shared[1]
+            loop do
+              ractor, response = Ractor.select(key_receiver)
+
+              case ractor.name.to_sym
+              when :key_receiver
+                key = response[:chunk]
+                Logger.debug(key)
+                event_receiver.send "event"
+              end
+            end
+
+          end
+
+        @input_loop =
+          Ractor.new [@input, @key_receiver] do |shared|
+            input_io = shared[0]
+            key_receiver = shared[1]
+            loop do
+              input = input_io.readpartial(128)
+              next unless input.length.positive?
+              key_receiver.send(input)
+            end
+          end
       end
 
       def write(content)
@@ -29,11 +69,8 @@ module Tambo
       end
 
       def draw
-        @buffer.truncate(0)
-        @buffer.rewind
-        str = @cell_buffer.to_s
-        Logger.debug(str)
-        @output.write(str)
+        s = @cell_buffer.to_s
+        @output.write(s)
       end
 
       def show
@@ -54,20 +91,28 @@ module Tambo
         @output&.close
       end
 
-      def winsize
-        height, width = @output.winsize
-        [width, height]
-      rescue IOError, NoMethodError
-        [-1, -1]
+      def poll_event
+        ractor, response = Ractor.select(@event_receiver)
+        return response[:event] if response
+        nil
       end
 
       def size
         winsize
       end
 
-      def beep; end
+      def beep
+        @output.write("\007")
+      end
 
       private
+
+      def winsize
+        height, width = @output.winsize
+        [width, height]
+      rescue IOError, NoMethodError
+        [-1, -1]
+      end
 
       def set_noncanonical_mode
         @termios = Termios.tcgetattr(@output)
