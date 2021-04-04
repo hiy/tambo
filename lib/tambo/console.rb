@@ -1,5 +1,9 @@
+# frozen_string_literal: true
+
 module Tambo
-  require 'forwardable'
+  require "forwardable"
+  require_relative "platform"
+
   class Console
     extend Forwardable
 
@@ -7,10 +11,21 @@ module Tambo
                    :clear,
                    :close,
                    :size,
-                   :poll_event
+                   :poll_event,
+                   :resize,
+                   :beep,
+                   :sync,
+                   :show,
+                   :colors,
+                   :write
 
     def initialize
-      @screen = Screen.new
+      @screen =
+        if Platform.darwin?
+          Tambo::Screen::Darwin.new
+        else
+          raise "unsupported platform"
+        end
     end
   end
 end

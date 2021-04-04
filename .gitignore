@@ -6,3 +6,11 @@
 /pkg/
 /spec/reports/
 /tmp/
+Makefile
+mkmf.log
+terminfo.bundle
+terminfo.o
+.sitearchdir*
+.sitelibdir*
+log
+ext

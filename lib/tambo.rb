@@ -1,8 +1,18 @@
 # frozen_string_literal: true
 
+require "stringio"
+require "unicode/display_width"
+
 require_relative "tambo/version"
 
 module Tambo
   class Error < StandardError; end
-  # Your code goes here...
+  require "tambo/logger"
+  require "tambo/cell"
+  require "tambo/infocmp"
+  require "tambo/terminfo"
+  require "tambo/platform"
+  require "tambo/screen/darwin"
+  require "tambo/console"
+  require "tambo/text"
 end
