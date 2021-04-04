@@ -13,4 +13,4 @@ require "rubocop/rake_task"
 
 RuboCop::RakeTask.new
 
-task default: %i[test rubocop clobber]
+task default: %i[test rubocop]
