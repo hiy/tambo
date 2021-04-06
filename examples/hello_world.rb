@@ -10,8 +10,8 @@ console.write(text)
 console.show
 
 loop do
-  e = console.poll_event
-  if e == 'event'
+  event = console.poll_event
+  if event.key?(Tambo::KEY_ESC)
     console.close
     break
   end

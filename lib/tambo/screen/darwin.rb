@@ -12,13 +12,15 @@ module Tambo
         @charset = "UTF-8"
         @input = IO.console
         @output = IO.console
+        set_noncanonical_mode
         @cell_buffer = Tambo::CellBuffer.new(@terminfo)
         width = @terminfo.columns
         height = @terminfo.lines
-        set_noncanonical_mode
         width, height = winsize
         @cell_buffer.resize(width, height)
         resize
+
+        @event_scanner = Tambo::Event::Scanner.new
 
         @event_receiver = Ractor.new name: "event_receiver" do
           loop do
@@ -27,40 +29,29 @@ module Tambo
           end
         end
 
-        @key_receiver = Ractor.new name: "key_receiver" do
+        @key_receiver = Ractor.new @input, name: "key_receiver" do |input|
           loop do
-            chunk = Ractor.receive
-            Ractor.yield({ chunk: chunk })
+            outbuf = input.readpartial(128)
+            next unless outbuf.length.positive?
+
+            Ractor.yield({ chunk: outbuf })
           end
         end
 
-        @main_loop =
-          Ractor.new [@event_receiver, @key_receiver] do |shared|
-            event_receiver = shared[0]
-            key_receiver = shared[1]
-            loop do
-              ractor, response = Ractor.select(key_receiver)
-
-              case ractor.name.to_sym
-              when :key_receiver
-                key = response[:chunk]
-                Logger.debug(key)
-                event_receiver.send "event"
-              end
-            end
-
-          end
-
-        @input_loop =
-          Ractor.new [@input, @key_receiver] do |shared|
-            input_io = shared[0]
-            key_receiver = shared[1]
-            loop do
-              input = input_io.readpartial(128)
-              next unless input.length.positive?
-              key_receiver.send(input)
+        # main loop
+        shared = [@event_receiver, @key_receiver, @event_scanner]
+        Ractor.new shared do |shared|
+          event_receiver, key_receiver, event_scanner = shared
+          loop do
+            ractor, response = Ractor.select(key_receiver)
+            case ractor.name.to_sym
+            when :key_receiver
+              key = response[:chunk]
+              event = event_scanner.scan(key)
+              event_receiver.send event
             end
           end
+        end
       end
 
       def write(content)
@@ -86,7 +77,7 @@ module Tambo
       def clear; end
 
       def close
-        Termios.tcsetattr(@output, Termios::TCSANOW, @termios)
+        set_canonical_mode
         @input&.close
         @output&.close
       end
@@ -94,6 +85,7 @@ module Tambo
       def poll_event
         ractor, response = Ractor.select(@event_receiver)
         return response[:event] if response
+
         nil
       end
 
@@ -127,6 +119,10 @@ module Tambo
         new_termios.cflag &= ~(Termios::CSIZE | Termios::PARENB)
         new_termios.cflag |= Termios::CS8
         Termios.tcsetattr(@output, Termios::TCSANOW, new_termios)
+      end
+
+      def set_canonical_mode
+        Termios.tcsetattr(@output, Termios::TCSANOW, @termios)
       end
     end
   end

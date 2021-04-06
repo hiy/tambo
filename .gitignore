@@ -14,3 +14,4 @@ terminfo.o
 .sitelibdir*
 log
 ext
+.DS_Store

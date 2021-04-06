@@ -7,6 +7,8 @@ require_relative "tambo/version"
 
 module Tambo
   class Error < StandardError; end
+  require "tambo/event/scanner"
+  require "tambo/event/key"
   require "tambo/logger"
   require "tambo/cell"
   require "tambo/infocmp"
