@@ -53,13 +53,8 @@ module Tambo
 
     def write(content)
       text = content
-
       text.each_char do |char|
         next unless cell = @cells[(char.y * @width) + char.x]
-
-        # Logger.debug(char.base_char)
-        # Logger.debug((char.y * @width) + char.x)
-
         cell.base_char = char.base_char.ord
         cell.combining_char = char.combining_char
         cell.width = char.width
@@ -87,7 +82,7 @@ module Tambo
       if within_screen?(x, y)
         cell = @cells[(y * @width) + x]
         if dirty
-          cell.last_main = 0
+          cell.last_base_char = 0
         else
           cell.base_char = " ".ord if cell.base_char.ord.zero?
           cell.last_base_char = cell.base_char
@@ -100,15 +95,14 @@ module Tambo
     def to_s
       @current_x = -1
       @current_y = -1
-
       0.upto(@height - 1) do |y|
         current_x = 0
         0.upto(@width - 1) do |x|
           next if x.positive? && current_x > x
 
           base_char, combining_char, style, width = read(x, y)
-
-          return width unless dirty?(x, y)
+          #return width unless dirty?(x, y)
+          #next unless dirty?(x, y)
 
           if @current_x != x || @current_y != x
             @terminfo.tgoto(x, y)
@@ -130,7 +124,10 @@ module Tambo
         end
       end
       @buffer.rewind
-      @buffer.read
+      s = @buffer.read
+      # Logger.debug(s)
+      # Logger.debug("#{@width} #{@height}")
+      return s
     end
 
     def resize(width, height)
@@ -147,7 +144,7 @@ module Tambo
           new_cell.combining_char = cell.combining_char
           # new_cell.curr_style = cell.curr_style
           new_cell.width = cell.width
-          # new_cell.last_main = 0
+          new_cell.last_base_char = 0
         end
       end
       @cells = new_cells
@@ -155,6 +152,15 @@ module Tambo
       @width = width
       @height = height
       [@width, @height]
+    end
+
+    def clear
+      @cells.each do |char|
+        char.base_char = " ".ord
+        char.combining_char = []
+        #char.style = style
+        char.width = 1
+      end
     end
 
     private

@@ -74,7 +74,9 @@ module Tambo
         @cell_buffer.resize(@width, @height)
       end
 
-      def clear; end
+      def clear
+        @cell_buffer.clear
+      end
 
       def close
         set_canonical_mode
