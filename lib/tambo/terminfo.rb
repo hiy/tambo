@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
 module Tambo
+  require 'singleton'
   class Terminfo
+    include Singleton
+
     require_relative "terminfo/param_buffer"
     require_relative "terminfo/param_stack"
 
-    def initialize(name)
+    def initialize
+      name = ENV["TERM"]
       info = Tambo::Infocmp.new(name).execute
       @name = info.name
       @aliases = info.aliases

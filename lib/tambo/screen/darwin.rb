@@ -2,21 +2,17 @@
 
 module Tambo
   module Screen
-    require "io/console"
-    require "termios"
-
     class Darwin
       def initialize
         Logger.clear_debug_log
-        @terminfo = Tambo::Terminfo.new(ENV["TERM"])
+        @terminfo = Tambo::Terminfo.instance
         @charset = "UTF-8"
-        @input = IO.console
-        @output = IO.console
-        set_noncanonical_mode
-        @cell_buffer = Tambo::CellBuffer.new(@terminfo)
+        @input = Tambo::Screen::Input.new
+        @output = Tambo::Screen::Output.new
+        @cell_buffer = Tambo::CellBuffer.new
         width = @terminfo.columns
         height = @terminfo.lines
-        width, height = winsize
+        width, height = size
         @cell_buffer.resize(width, height)
         resize
 
@@ -29,6 +25,7 @@ module Tambo
           end
         end
 
+        # key input loop
         @key_receiver = Ractor.new @input, name: "key_receiver" do |input|
           loop do
             outbuf = input.readpartial(128)
@@ -60,8 +57,7 @@ module Tambo
       end
 
       def draw
-        s = @cell_buffer.to_s
-        @output.write(s)
+        @output.write(@cell_buffer.to_s)
       end
 
       def show
@@ -70,16 +66,16 @@ module Tambo
       end
 
       def resize
-        @width, @height = winsize
+        @width, @height = size
         @cell_buffer.resize(@width, @height)
       end
 
       def clear
         @cell_buffer.clear
+        @output.clear
       end
 
       def close
-        set_canonical_mode
         @input&.close
         @output&.close
       end
@@ -92,7 +88,7 @@ module Tambo
       end
 
       def size
-        winsize
+        @output.winsize
       end
 
       def beep
@@ -100,32 +96,6 @@ module Tambo
       end
 
       private
-
-      def winsize
-        height, width = @output.winsize
-        [width, height]
-      rescue IOError, NoMethodError
-        [-1, -1]
-      end
-
-      def set_noncanonical_mode
-        @termios = Termios.tcgetattr(@output)
-        # It is possible to put the terminal in noncanonical mode
-        # and get input immediately.
-        new_termios = @termios.dup
-        new_termios.iflag &= ~(Termios::IGNBRK | Termios::BRKINT | Termios::PARMRK |
-          Termios::ISTRIP | Termios::INLCR | Termios::IGNCR |
-          Termios::ICRNL | Termios::IXON)
-        new_termios.oflag &= ~Termios::OPOST
-        new_termios.lflag &= ~(Termios::ECHO | Termios::ECHONL | Termios::ICANON | Termios::ISIG | Termios::IEXTEN)
-        new_termios.cflag &= ~(Termios::CSIZE | Termios::PARENB)
-        new_termios.cflag |= Termios::CS8
-        Termios.tcsetattr(@output, Termios::TCSANOW, new_termios)
-      end
-
-      def set_canonical_mode
-        Termios.tcsetattr(@output, Termios::TCSANOW, @termios)
-      end
     end
   end
 end

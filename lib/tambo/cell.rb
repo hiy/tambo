@@ -21,8 +21,8 @@ module Tambo
   class CellBuffer
     attr_reader :width, :height
 
-    def initialize(terminfo)
-      @terminfo = terminfo
+    def initialize
+      @terminfo = Tambo::Terminfo.instance
       @buffer = StringIO.new
       @width = 0
       @height = 0
