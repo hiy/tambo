@@ -16,7 +16,6 @@ console.show
 i = 0
 
 loop do
-
   event = console.poll_event
 
   if event.key?(KEY_ESC)
@@ -28,6 +27,5 @@ loop do
 
   i += 1
 end
-
 
 console.close

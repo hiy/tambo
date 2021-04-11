@@ -6,6 +6,7 @@ module Tambo
       def initialize
         Logger.clear_debug_log
         @terminfo = Tambo::Terminfo.instance
+        #binding.irb
         @charset = "UTF-8"
         @input = Tambo::Screen::Input.new
         @output = Tambo::Screen::Output.new
@@ -15,6 +16,10 @@ module Tambo
         width, height = size
         @cell_buffer.resize(width, height)
         resize
+
+        @output.enter_ca_mode
+        @output.hide_cursor
+        @output.clear
 
         @event_scanner = Tambo::Event::Scanner.new
 
@@ -28,7 +33,7 @@ module Tambo
         # key input loop
         @key_receiver = Ractor.new @input, name: "key_receiver" do |input|
           loop do
-            outbuf = input.readpartial(128)
+            outbuf = input.read
             next unless outbuf.length.positive?
 
             Ractor.yield({ chunk: outbuf })
@@ -57,7 +62,13 @@ module Tambo
       end
 
       def draw
-        @output.write(@cell_buffer.to_s)
+        @output.buffering do |buffer|
+          @terminfo.tputs(buffer, @terminfo.cursor_invisible)
+          @terminfo.tputs(buffer, @terminfo.clear_screen)
+          buffer.write(@cell_buffer.to_s)
+          @terminfo.tputs(buffer, @terminfo.cursor_visible)
+        end
+        @output.write_buffer
       end
 
       def show
@@ -68,11 +79,11 @@ module Tambo
       def resize
         @width, @height = size
         @cell_buffer.resize(@width, @height)
+        @cell_buffer.invalidate
       end
 
       def clear
         @cell_buffer.clear
-        @output.clear
       end
 
       def close
@@ -94,8 +105,6 @@ module Tambo
       def beep
         @output.write("\007")
       end
-
-      private
     end
   end
 end

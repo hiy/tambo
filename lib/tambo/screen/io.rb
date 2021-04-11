@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 module Tambo
-   module Screen
+  module Screen
     require "forwardable"
     require "io/console"
     require "termios"
@@ -7,30 +9,55 @@ module Tambo
     class Input
       extend Forwardable
       def_delegators :@input,
-      :readpartial
+                     :readpartial
 
       def initialize
-        @input = IO.console
+        @input = File.open("/dev/tty", "r") # IO.console
       end
 
       def close
         @input.close
       end
 
-      def readpartial(s)
-        @input.readpartial(s)
+      def read
+        @input.readpartial(128)
       end
     end
 
     class Output
       extend Forwardable
 
+      attr_reader :buffer
       def_delegators :@output
 
+      class Buffer
+      end
+
       def initialize
-        @output = IO.console
+        @output = File.open("/dev/tty", "w") #IO.console
         @terminfo = Tambo::Terminfo.instance
+        @buffer = StringIO.new
         set_noncanonical_mode
+      end
+
+      def buffering
+        @buffer.truncate(0)
+        @buffer.rewind
+        yield @buffer
+      end
+
+      def read_buffer
+        @buffer.rewind
+        @buffer.read
+      end
+
+      def write_buffer
+        @buffer.rewind
+        s = @buffer.read
+        # Logger.debug(s)
+        @output.write(s)
+        @buffer.truncate(0)
+        @buffer.rewind
       end
 
       def write(str)
@@ -38,12 +65,24 @@ module Tambo
       end
 
       def close
-        @output.close
         set_canonical_mode
+        @output.close
       end
 
       def clear
         tputs(@terminfo.clear_screen)
+      end
+
+      def enter_ca_mode
+        tputs(@terminfo.enter_ca_mode)
+      end
+
+      def show_cursor
+        tputs(@terminfo.cursor_visible)
+      end
+
+      def hide_cursor
+        tputs(@terminfo.cursor_invisible)
       end
 
       def tputs(str)

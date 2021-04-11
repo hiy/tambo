@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Tambo
-  require 'singleton'
+  require "singleton"
   class Terminfo
     include Singleton
 
@@ -37,7 +37,7 @@ module Tambo
     def to_yaml; end
 
     def tgoto(col, row)
-      tparm(@set_cursor, [row, col])
+      tparm(@cursor_address, row, col)
     end
 
     def tputs(buffer, str)
