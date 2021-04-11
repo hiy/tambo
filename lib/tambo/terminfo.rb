@@ -2,6 +2,7 @@
 
 module Tambo
   require "singleton"
+  require "yaml"
   class Terminfo
     include Singleton
 
@@ -34,7 +35,9 @@ module Tambo
 
     attr_reader :name, :aliases
 
-    def to_yaml; end
+    def to_yaml
+      YAML.dump(self)
+    end
 
     def tgoto(col, row)
       tparm(@cursor_address, row, col)

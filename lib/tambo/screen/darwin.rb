@@ -6,7 +6,7 @@ module Tambo
       def initialize
         Logger.clear_debug_log
         @terminfo = Tambo::Terminfo.instance
-        # binding.irb
+        Logger.dump_to_yaml(@terminfo)
         @charset = "UTF-8"
         @input = Tambo::Screen::Input.new
         @output = Tambo::Screen::Output.new
@@ -20,6 +20,13 @@ module Tambo
         @output.enter_ca_mode
         @output.hide_cursor
         @output.clear
+
+        # window resize signal
+        Signal.trap("SIGWINCH") do |_signo|
+          resize
+          @cell_buffer.invalidate
+          draw
+        end
 
         @event_receiver = Ractor.new name: "event_receiver" do
           loop do

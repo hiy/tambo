@@ -22,5 +22,11 @@ module Tambo
         f.write str
       end
     end
+
+    def self.dump_to_yaml(obj)
+      File.open("#{Dir.pwd}/log/terminfo.yaml", "w") do |f|
+        f.write obj.to_yaml
+      end
+    end
   end
 end

@@ -145,7 +145,7 @@ module Tambo
       min_height.times do |y|
         min_width.times do |x|
           cell = @cells[(y * @width) + x]
-          new_cell = new_cells[(y * w) + x]
+          new_cell = new_cells[(y * width) + x]
           new_cell.base_char = cell.base_char
           new_cell.combining_char = cell.combining_char
           # new_cell.curr_style = cell.curr_style
