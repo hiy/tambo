@@ -19,7 +19,7 @@ module Tambo
   end
 
   class CellBuffer
-    require 'unicode/display_width'
+    require "unicode/display_width"
     attr_reader :width, :height
 
     def initialize
@@ -56,13 +56,13 @@ module Tambo
     def write(content)
       text = content
       text.each_char do |char|
-        if within_screen?(char.x, char.y)
-          cell = @cells[(char.y * @width) + char.x]
-          cell.base_char = char.base_char.ord
-          cell.combining_char = char.combining_char
-          cell.width = @display_width.of(char.base_char) if cell.base_char != char.base_char
-          # cell.style
-        end
+        next unless within_screen?(char.x, char.y)
+
+        cell = @cells[(char.y * @width) + char.x]
+        cell.base_char = char.base_char.ord
+        cell.combining_char = char.combining_char
+        cell.width = @display_width.of(char.base_char) if cell.base_char != char.base_char
+        # cell.style
       end
     end
 
@@ -114,7 +114,7 @@ module Tambo
 
           if dirty?(x, y)
             if @cx != x || @cy != y
-              @terminfo.tputs(@buffer,  @terminfo.tgoto(x, y))
+              @terminfo.tputs(@buffer, @terminfo.tgoto(x, y))
               @cx = x
               @cy = y
             end
@@ -127,7 +127,6 @@ module Tambo
             set_dirty(x, y, false)
             @cx = -1 if width > 1
           end
-
 
           set_dirty(x + 1, y, true) if width > (1) && (x + 1 < @width)
           current_x = x + (width - 1)
@@ -161,7 +160,7 @@ module Tambo
       [@width, @height]
     end
 
-    def fill(char, style)
+    def fill(char, _style)
       @cells.each do |cell|
         cell.base_char = char.ord
         cell.combining_char = []

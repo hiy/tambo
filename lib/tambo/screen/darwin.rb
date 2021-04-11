@@ -6,7 +6,7 @@ module Tambo
       def initialize
         Logger.clear_debug_log
         @terminfo = Tambo::Terminfo.instance
-        #binding.irb
+        # binding.irb
         @charset = "UTF-8"
         @input = Tambo::Screen::Input.new
         @output = Tambo::Screen::Output.new

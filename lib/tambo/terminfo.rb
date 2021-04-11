@@ -82,9 +82,9 @@ module Tambo
         end
       end
 
-      if @pad_char.size.positive?
-        # sleep( / unit)
-      end
+      # if @pad_char.size.positive?
+      #   # sleep( / unit)
+      # end
     end
 
     def tparm(str, *parm)

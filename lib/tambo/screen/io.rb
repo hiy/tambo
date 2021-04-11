@@ -28,13 +28,14 @@ module Tambo
       extend Forwardable
 
       attr_reader :buffer
+
       def_delegators :@output
 
       class Buffer
       end
 
       def initialize
-        @output = File.open("/dev/tty", "w") #IO.console
+        @output = File.open("/dev/tty", "w") # IO.console
         @terminfo = Tambo::Terminfo.instance
         @buffer = StringIO.new
         set_noncanonical_mode
