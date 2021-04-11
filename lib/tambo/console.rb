@@ -21,8 +21,14 @@ module Tambo
 
     def initialize
       @screen =
-        if Platform.darwin?
+        case
+        when Platform.darwin?
           Tambo::Screen::Darwin.new
+        when Platform.linux?
+          Tambo::Screen::Linux.new
+          raise "unsupported platform"
+        when Platform.windows?
+          raise "unsupported platform"
         else
           raise "unsupported platform"
         end

@@ -74,25 +74,12 @@ module Tambo
         @cell_buffer.write(content)
       end
 
-      def draw
-        @output.buffering do |buffer|
-          @terminfo.tputs(buffer, @terminfo.cursor_invisible)
-          @terminfo.tputs(buffer, @terminfo.clear_screen)
-          buffer.write(@cell_buffer.to_s)
-          @terminfo.tputs(buffer, @terminfo.cursor_visible)
-        end
-        @output.write_buffer
-      end
-
       def show
         resize
         draw
       end
 
-      def resize
-        @width, @height = size
-        @cell_buffer.resize(@width, @height)
-        @cell_buffer.invalidate
+      def sync
       end
 
       def clear
@@ -117,6 +104,24 @@ module Tambo
 
       def beep
         @output.write("\007")
+      end
+
+      private
+
+      def draw
+        @output.buffering do |buffer|
+          @terminfo.tputs(buffer, @terminfo.cursor_invisible)
+          @terminfo.tputs(buffer, @terminfo.clear_screen)
+          buffer.write(@cell_buffer.to_s)
+          @terminfo.tputs(buffer, @terminfo.cursor_visible)
+        end
+        @output.write_buffer
+      end
+
+      def resize
+        @width, @height = size
+        @cell_buffer.resize(@width, @height)
+        @cell_buffer.invalidate
       end
     end
   end
