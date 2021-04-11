@@ -21,8 +21,6 @@ module Tambo
         @output.hide_cursor
         @output.clear
 
-        @event_scanner = Tambo::Event::Scanner.new
-
         @event_receiver = Ractor.new name: "event_receiver" do
           loop do
             event = Ractor.receive
@@ -41,16 +39,24 @@ module Tambo
         end
 
         # main loop
-        shared = [@event_receiver, @key_receiver, @event_scanner]
+        shared = [
+          @event_receiver,
+          @key_receiver,
+          Tambo::Event::Scanner.new
+        ]
         Ractor.new shared do |shared|
           event_receiver, key_receiver, event_scanner = shared
+          key_buffer = StringIO.new
+
           loop do
             ractor, response = Ractor.select(key_receiver)
             case ractor.name.to_sym
             when :key_receiver
-              key = response[:chunk]
-              event = event_scanner.scan(key)
-              event_receiver.send event
+              pos = key_buffer.pos
+              key_buffer.write(response[:chunk])
+              key_buffer.pos = pos
+              events = event_scanner.scan(key_buffer)
+              events.each { |event| event_receiver.send event }
             end
           end
         end
