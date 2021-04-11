@@ -79,9 +79,6 @@ module Tambo
         draw
       end
 
-      def sync
-      end
-
       def clear
         @cell_buffer.clear
       end
@@ -90,6 +87,8 @@ module Tambo
         @input&.close
         @output&.close
       end
+
+      def sync; end
 
       def poll_event
         ractor, response = Ractor.select(@event_receiver)
@@ -101,6 +100,8 @@ module Tambo
       def size
         @output.winsize
       end
+
+      def colors; end
 
       def beep
         @output.write("\007")

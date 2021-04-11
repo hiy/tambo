@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Tambo
   MOD_NONE  = 0
   MOD_SHIFT = 1 << 0

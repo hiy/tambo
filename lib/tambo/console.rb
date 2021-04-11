@@ -8,26 +8,24 @@ module Tambo
     extend Forwardable
 
     def_delegators :@screen,
+                   :write,
+                   :show,
                    :clear,
                    :close,
-                   :size,
-                   :poll_event,
-                   :resize,
-                   :beep,
                    :sync,
-                   :show,
+                   :poll_event,
+                   :size,
                    :colors,
-                   :write
+                   :beep
 
     def initialize
       @screen =
-        case
-        when Platform.darwin?
+        if Platform.darwin?
           Tambo::Screen::Darwin.new
-        when Platform.linux?
+        elsif Platform.linux?
           Tambo::Screen::Linux.new
           raise "unsupported platform"
-        when Platform.windows?
+        elsif Platform.windows?
           raise "unsupported platform"
         else
           raise "unsupported platform"

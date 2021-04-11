@@ -12,7 +12,13 @@ module Tambo
       end
 
       def key?(key = nil)
+        return true if key.nil?
+
         @key == key
+      end
+
+      def resize?
+        false
       end
     end
   end
