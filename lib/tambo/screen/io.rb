@@ -47,22 +47,17 @@ module Tambo
         yield @buffer
       end
 
-      def read_buffer
-        @buffer.rewind
-        @buffer.read
-      end
-
-      def write_buffer
-        @buffer.rewind
-        s = @buffer.read
-        # Logger.debug(s)
-        @output.write(s)
-        @buffer.truncate(0)
-        @buffer.rewind
-      end
-
-      def write(str)
-        @output.write(str)
+      def write(str = nil)
+        if str.nil?
+          @buffer.rewind
+          s = @buffer.read
+          # Logger.debug(s)
+          @output.write(s)
+          @buffer.truncate(0)
+          @buffer.rewind
+        else
+          @output.write(str)
+        end
       end
 
       def close

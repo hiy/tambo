@@ -86,6 +86,15 @@ module Tambo
       end
 
       def close
+        @cell_buffer.resize(0, 0)
+
+        @output.buffering do |buffer|
+          @terminfo.tputs(buffer, @terminfo.cursor_visible)
+          @terminfo.tputs(buffer, @terminfo.clear_screen)
+        end
+
+        @output.write
+
         @input&.close
         @output&.close
       end
@@ -123,7 +132,8 @@ module Tambo
           buffer.write(s)
           @terminfo.tputs(buffer, @terminfo.cursor_visible)
         end
-        @output.write_buffer
+
+        @output.write
       end
 
       def resize
