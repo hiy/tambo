@@ -11,10 +11,22 @@ module Tambo
         @mod = mod
       end
 
+      def ord
+        @char.ord
+      end
+
       def key?(key = nil)
         return true if key.nil?
 
         @key == key
+      end
+
+      def mouse?
+        false
+      end
+
+      def paste?
+        false
       end
 
       def resize?

@@ -12,6 +12,7 @@ module Tambo
   require "tambo/screen/io"
   require "tambo/event/scanner"
   require "tambo/event/key"
+  require "tambo/event/resize"
   require "tambo/logger"
   require "tambo/cell"
   require "tambo/infocmp"

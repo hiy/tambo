@@ -11,22 +11,6 @@ module Tambo
         @input = Tambo::Screen::Input.new
         @output = Tambo::Screen::Output.new
         @cell_buffer = Tambo::CellBuffer.new
-        width = @terminfo.columns
-        height = @terminfo.lines
-        width, height = size
-        @cell_buffer.resize(width, height)
-        resize
-
-        @output.enter_ca_mode
-        @output.hide_cursor
-        @output.clear
-
-        # window resize signal
-        Signal.trap("SIGWINCH") do |_signo|
-          resize
-          @cell_buffer.invalidate
-          draw
-        end
 
         @event_receiver = Ractor.new name: "event_receiver" do
           loop do
@@ -43,6 +27,20 @@ module Tambo
 
             Ractor.yield({ chunk: outbuf })
           end
+        end
+
+        @cell_buffer.resize(*size)
+        resize
+
+        @output.enter_ca_mode
+        @output.hide_cursor
+        @output.clear
+
+        # window resize signal
+        Signal.trap("SIGWINCH") do |_signo|
+          resize
+          @cell_buffer.invalidate
+          draw
         end
 
         # main loop
@@ -80,6 +78,7 @@ module Tambo
       end
 
       def clear
+        Logger.debug("darwin#clear")
         @cell_buffer.clear
       end
 
@@ -88,7 +87,10 @@ module Tambo
         @output&.close
       end
 
-      def sync; end
+      def sync
+        resize
+        draw
+      end
 
       def poll_event
         ractor, response = Ractor.select(@event_receiver)
@@ -110,19 +112,28 @@ module Tambo
       private
 
       def draw
+        Logger.debug("darwin#draw")
         @output.buffering do |buffer|
           @terminfo.tputs(buffer, @terminfo.cursor_invisible)
           @terminfo.tputs(buffer, @terminfo.clear_screen)
-          buffer.write(@cell_buffer.to_s)
+          s = @cell_buffer.to_s
+          Logger.debug("#{self.class}##{__method__}: #{s}")
+          buffer.write(s)
           @terminfo.tputs(buffer, @terminfo.cursor_visible)
         end
         @output.write_buffer
       end
 
       def resize
-        @width, @height = size
-        @cell_buffer.resize(@width, @height)
-        @cell_buffer.invalidate
+        width, height = size
+        if width != @width || height != @height
+          @cell_buffer.resize(width, height)
+          @cell_buffer.invalidate
+          @width = width
+          @height = height
+          resize_event = Event::Resize.new(width: width, height: height)
+          @event_receiver.send resize_event
+        end
       end
     end
   end

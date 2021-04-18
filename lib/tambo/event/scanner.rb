@@ -23,9 +23,9 @@ module Tambo
             return events
           end
 
-          if bytes.first == Tambo::KEY_ESC
+          if bytes.first == Tambo::KeyEscape
             if bytes.length == 1
-              events << Tambo::Event::Key.new(key: KEY_ESC)
+              events << Tambo::Event::Key.new(key: Tambo::KeyESC)
               @escaped = false
             else
               @escaped = true

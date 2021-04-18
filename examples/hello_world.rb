@@ -8,6 +8,7 @@ begin
   x = width / 2 - 7
   y = height / 2
   text = Tambo::Text.new("Hello World!", x, y)
+  console.clear
   console.write(text)
   console.show
 
@@ -16,13 +17,16 @@ begin
   loop do
     event = console.poll_event
 
-    if event.key?(Tambo::KEY_ESC)
+    break if event.key?(Tambo::KeyESC)
+
+    if event.resize?
+      width, height = console.size
+      x = width / 2 - 7
+      y = height / 2
       text = Tambo::Text.new("Hello World! #{i}", x, y)
       console.clear
       console.write(text)
       console.show
-      console.beep
-      break if i > 3
     end
 
     i += 1

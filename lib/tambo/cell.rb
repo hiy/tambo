@@ -69,6 +69,20 @@ module Tambo
     def dirty?(x, y)
       if within_screen?(x, y)
         cell = @cells[(y * @width) + x]
+
+        Logger.debug("
+        #{cell.base_char}
+        #{cell.last_base_char}
+        #{cell.last_combining_char}
+        #{cell.combining_char}
+      ")
+
+        # cell.last_base_char.ord 0
+        # cell.last_base_char 0
+        # cell.base_char 32
+        # cell.last_combining_char.size 0
+        # cell.combining_char.size  0
+
         return true if cell.last_base_char.ord.zero?
         return true if cell.last_base_char != cell.base_char
         # return true if cell.last_style != cell.style
@@ -113,7 +127,9 @@ module Tambo
           # Logger.debug("x: #{x}  y: #{y}")
 
           if dirty?(x, y)
+            Logger.debug("dirty")
             if @cx != x || @cy != y
+              Logger.debug("#{@cx}, #{@cy}")
               @terminfo.tputs(@buffer, @terminfo.tgoto(x, y))
               @cx = x
               @cy = y
@@ -122,10 +138,18 @@ module Tambo
             width = 1 if width < 1
 
             str = base_char.chr("UTF-8")
+
+            if x > @width - width
+              width = 1
+              str = " "
+            end
+
             @buffer.write(str)
             @cx += width
             set_dirty(x, y, false)
             @cx = -1 if width > 1
+          else
+            Logger.debug("not dirty")
           end
 
           set_dirty(x + 1, y, true) if width > (1) && (x + 1 < @width)
@@ -137,6 +161,7 @@ module Tambo
     end
 
     def resize(width, height)
+      # Logger.debug("#{@width}, #{width}, #{@height}, #{height}")
       return [width, height] if @width == width && @height == height
 
       new_cells = Array.new(width * height) { Cell.new }
@@ -154,10 +179,14 @@ module Tambo
         end
       end
       @cells = new_cells
-
+      # Logger.debug("#{@cells.length}")
       @width = width
       @height = height
       [@width, @height]
+    end
+
+    def clear
+      fill(" ", nil)
     end
 
     def fill(char, _style)
@@ -167,10 +196,6 @@ module Tambo
         # cell.style = style
         cell.width = 1
       end
-    end
-
-    def clear
-      fill(" ", nil)
     end
 
     def invalidate

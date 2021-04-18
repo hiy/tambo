@@ -26,6 +26,7 @@ module Tambo
           Tambo::Screen::Linux.new
           raise "unsupported platform"
         elsif Platform.windows?
+          Tambo::Screen::Windows.new
           raise "unsupported platform"
         else
           raise "unsupported platform"

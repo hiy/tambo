@@ -2,7 +2,7 @@
 
 module Tambo
   module Screen
-    class Linux
+    class Windows
       def initialize; end
 
       def write; end
