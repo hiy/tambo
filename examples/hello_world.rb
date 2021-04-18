@@ -2,8 +2,7 @@
 
 require "tambo"
 
-begin
-  console = Tambo::Console.new
+def display_hello_world(console)
   width, height = console.size
   x = width / 2 - 7
   y = height / 2
@@ -11,7 +10,11 @@ begin
   console.clear
   console.write(text)
   console.show
-  i = 0
+end
+
+begin
+  console = Tambo::Console.new
+  display_hello_world(console)
 
   loop do
     event = console.poll_event
@@ -19,16 +22,8 @@ begin
     break if event.key?(Tambo::KEY_ESC)
 
     if event.resize?
-      width, height = console.size
-      x = width / 2 - 7
-      y = height / 2
-      text = Tambo::Text.new("Hello World! #{i}", x, y)
-      console.clear
-      console.write(text)
-      console.show
+      display_hello_world(console)
     end
-
-    i += 1
   end
 ensure
   console.close
