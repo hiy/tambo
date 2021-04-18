@@ -78,7 +78,7 @@ module Tambo
       end
 
       def clear
-        Logger.debug("darwin#clear")
+        # Logger.debug("darwin#clear")
         @cell_buffer.clear
       end
 
@@ -112,7 +112,7 @@ module Tambo
       private
 
       def draw
-        Logger.debug("darwin#draw")
+        # Logger.debug("darwin#draw")
         @output.buffering do |buffer|
           @terminfo.tputs(buffer, @terminfo.cursor_invisible)
           @terminfo.tputs(buffer, @terminfo.clear_screen)

@@ -70,18 +70,12 @@ module Tambo
       if within_screen?(x, y)
         cell = @cells[(y * @width) + x]
 
-        Logger.debug("
-        #{cell.base_char}
-        #{cell.last_base_char}
-        #{cell.last_combining_char}
-        #{cell.combining_char}
-      ")
-
-        # cell.last_base_char.ord 0
-        # cell.last_base_char 0
-        # cell.base_char 32
-        # cell.last_combining_char.size 0
-        # cell.combining_char.size  0
+      #   Logger.debug("
+      #   base_char: #{cell.base_char}
+      #   last_base_char: #{cell.last_base_char}
+      #   last_combining_char: #{cell.last_combining_char}
+      #   combining_char: #{cell.combining_char}
+      # ")
 
         return true if cell.last_base_char.ord.zero?
         return true if cell.last_base_char != cell.base_char
@@ -127,9 +121,9 @@ module Tambo
           # Logger.debug("x: #{x}  y: #{y}")
 
           if dirty?(x, y)
-            Logger.debug("dirty")
+            # Logger.debug("dirty")
             if @cx != x || @cy != y
-              Logger.debug("#{@cx}, #{@cy}")
+              # Logger.debug("#{@cx}, #{@cy}")
               @terminfo.tputs(@buffer, @terminfo.tgoto(x, y))
               @cx = x
               @cy = y
@@ -149,7 +143,7 @@ module Tambo
             set_dirty(x, y, false)
             @cx = -1 if width > 1
           else
-            Logger.debug("not dirty")
+            # Logger.debug("not dirty")
           end
 
           set_dirty(x + 1, y, true) if width > (1) && (x + 1 < @width)
