@@ -29,7 +29,9 @@ module Tambo
           end
         end
 
-        @cell_buffer.resize(*size)
+        width, height = size
+        @cell_buffer.resize(width, height)
+        @width, @height = width, height
         resize
 
         @output.enter_ca_mode
@@ -38,6 +40,7 @@ module Tambo
 
         # window resize signal
         Signal.trap("SIGWINCH") do |_signo|
+          Logger.debug('SIGWINCH')
           resize
           @cell_buffer.invalidate
           draw
@@ -112,7 +115,6 @@ module Tambo
       private
 
       def draw
-        # Logger.debug("darwin#draw")
         @output.buffering do |buffer|
           @terminfo.tputs(buffer, @terminfo.cursor_invisible)
           @terminfo.tputs(buffer, @terminfo.clear_screen)
@@ -125,8 +127,8 @@ module Tambo
       end
 
       def resize
-        width, height = size
-        if width != @width || height != @height
+        if resized?
+          width, height = size
           @cell_buffer.resize(width, height)
           @cell_buffer.invalidate
           @width = width
@@ -134,6 +136,11 @@ module Tambo
           resize_event = Event::Resize.new(width: width, height: height)
           @event_receiver.send resize_event
         end
+      end
+
+      def resized?
+        width, height = size
+        width != @width || height != @height
       end
     end
   end

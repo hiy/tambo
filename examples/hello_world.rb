@@ -11,7 +11,6 @@ begin
   console.clear
   console.write(text)
   console.show
-
   i = 0
 
   loop do
