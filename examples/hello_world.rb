@@ -17,7 +17,7 @@ begin
   loop do
     event = console.poll_event
 
-    break if event.key?(Tambo::KeyESC)
+    break if event.key?(Tambo::KEY_ESC)
 
     if event.resize?
       width, height = console.size
