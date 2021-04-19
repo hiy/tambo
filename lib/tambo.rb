@@ -9,6 +9,8 @@ module Tambo
   class Error < StandardError; end
   require "tambo/constants/key"
 
+  require "tambo/style"
+  require "tambo/color"
   require "tambo/screen/io"
   require "tambo/event/scanner"
   require "tambo/event/key"

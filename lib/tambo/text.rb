@@ -11,29 +11,31 @@ module Tambo
     class Char
       attr_reader :base_char,
                   :combining_char,
+                  :style,
                   :x, :y,
                   :width
 
-      def initialize(base_char, combining_char, x, y, width)
+      def initialize(base_char, combining_char, x, y, style, width)
         @base_char = base_char
         @combining_char = combining_char
         @x = x
         @y = y
+        @style = style
         @width = width
       end
     end
 
-    def initialize(text, x = 0, y = 0, _style = nil)
+    def initialize(text, x = 0, y = 0, style = Tambo::Style.new)
       @text = text
       @x = x
       @y = y
-      @style = nil
+      @style = style
     end
 
     def each_char
       return enum_for(:each_char) unless block_given?
 
-      @text.each_char.with_index do |base_char, _index|
+      @text.each_char do |base_char|
         combining_char = []
 
         width = Unicode::DisplayWidth.of(base_char, 2)
@@ -43,7 +45,7 @@ module Tambo
           width = 1
         end
 
-        content = Char.new(base_char, combining_char, @x, @y, width)
+        content = Char.new(base_char, combining_char, @x, @y, @style, width)
 
         yield(content)
         @x += width

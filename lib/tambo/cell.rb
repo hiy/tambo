@@ -14,6 +14,8 @@ module Tambo
       @combining_char = []
       @last_base_char = 0
       @last_combining_char = []
+      @style = Tambo::Style.new
+      @last_style = Tambo::Style.new
       @width = 0
     end
   end
@@ -43,7 +45,7 @@ module Tambo
 
         base_char = cell.base_char
         combining_char = cell.combining_char || []
-        style = nil
+        style = cell.style
         width = cell.width
         if width.zero? || base_char.ord < " ".ord
           width = 1
@@ -62,7 +64,7 @@ module Tambo
         cell.base_char = char.base_char.ord
         cell.combining_char = char.combining_char
         cell.width = @display_width.of(char.base_char) if cell.base_char != char.base_char
-        # cell.style
+        cell.style = char.style
       end
     end
 
@@ -70,12 +72,12 @@ module Tambo
       if within_screen?(x, y)
         cell = @cells[(y * @width) + x]
 
-      #   Logger.debug("
-      #   base_char: #{cell.base_char}
-      #   last_base_char: #{cell.last_base_char}
-      #   last_combining_char: #{cell.last_combining_char}
-      #   combining_char: #{cell.combining_char}
-      # ")
+        #   Logger.debug("
+        #   base_char: #{cell.base_char}
+        #   last_base_char: #{cell.last_base_char}
+        #   last_combining_char: #{cell.last_combining_char}
+        #   combining_char: #{cell.combining_char}
+        # ")
 
         return true if cell.last_base_char.ord.zero?
         return true if cell.last_base_char != cell.base_char
@@ -129,6 +131,16 @@ module Tambo
               @cy = y
             end
 
+            # set style
+            @terminfo.tputs(@buffer, @terminfo.exit_attribute_mode)
+
+            # reset
+            @terminfo.tputs(@buffer, @terminfo.orig_pair)
+            @terminfo.tputs(@buffer, @terminfo.tparm(@terminfo.set_a_foreground, (style.color.to_i) & 0xff))
+            @terminfo.tputs(@buffer, @terminfo.tparm(@terminfo.set_a_background, (style.bgcolor.to_i) & 0xff))
+
+            # end set style
+
             width = 1 if width < 1
 
             str = base_char.chr("UTF-8")
@@ -167,7 +179,7 @@ module Tambo
           new_cell = new_cells[(y * width) + x]
           new_cell.base_char = cell.base_char
           new_cell.combining_char = cell.combining_char
-          # new_cell.curr_style = cell.curr_style
+          new_cell.style = cell.style
           new_cell.width = cell.width
           new_cell.last_base_char = 0
         end

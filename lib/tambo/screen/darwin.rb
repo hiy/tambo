@@ -3,6 +3,8 @@
 module Tambo
   module Screen
     class Darwin
+      attr_accessor :style
+
       def initialize
         Logger.clear_debug_log
         @terminfo = Tambo::Terminfo.instance
@@ -31,7 +33,8 @@ module Tambo
 
         width, height = size
         @cell_buffer.resize(width, height)
-        @width, @height = width, height
+        @width = width
+        @height = height
         resize
 
         @output.enter_ca_mode
@@ -40,7 +43,7 @@ module Tambo
 
         # window resize signal
         Signal.trap("SIGWINCH") do |_signo|
-          Logger.debug('SIGWINCH')
+          Logger.debug("SIGWINCH")
           resize
           @cell_buffer.invalidate
           draw

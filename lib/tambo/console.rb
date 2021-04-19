@@ -8,6 +8,8 @@ module Tambo
     extend Forwardable
 
     def_delegators :@screen,
+                   :style,
+                   :style=,
                    :write,
                    :show,
                    :clear,

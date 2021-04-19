@@ -28,5 +28,14 @@ module Tambo
         f.write obj.to_yaml
       end
     end
+
+    def self.backtrace(e)
+      File.open("#{Dir.pwd}/log/debug.log", "a") do |f|
+        f.write e
+        e.backtrace.each do |str|
+          f.write "#{str}\n"
+        end
+      end
+    end
   end
 end
