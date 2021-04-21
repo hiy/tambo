@@ -3,8 +3,6 @@
 module Tambo
   module Screen
     class Darwin
-      attr_accessor :style
-
       def initialize
         Logger.clear_debug_log
         @terminfo = Tambo::Terminfo.instance
@@ -13,7 +11,6 @@ module Tambo
         @input = Tambo::Screen::Input.new
         @output = Tambo::Screen::Output.new
         @cell_buffer = Tambo::CellBuffer.new
-
         @event_receiver = Ractor.new name: "event_receiver" do
           loop do
             event = Ractor.receive
@@ -124,6 +121,15 @@ module Tambo
         @output.write("\007")
       end
 
+      def style
+       @style
+      end
+
+      def style=(style)
+        @style = style
+        @cell_buffer.style = style
+      end
+
       private
 
       def draw
@@ -140,15 +146,15 @@ module Tambo
       end
 
       def resize
-        if resized?
-          width, height = size
-          @cell_buffer.resize(width, height)
-          @cell_buffer.invalidate
-          @width = width
-          @height = height
-          resize_event = Event::Resize.new(width: width, height: height)
-          @event_receiver.send resize_event
-        end
+        return unless resized?
+
+        width, height = size
+        @cell_buffer.resize(width, height)
+        @cell_buffer.invalidate
+        @width = width
+        @height = height
+        resize_event = Event::Resize.new(width: width, height: height)
+        @event_receiver.send resize_event
       end
 
       def resized?

@@ -2,33 +2,21 @@
 
 module Tambo
   class Style
-    attr_accessor :color, :bgcolor
+    attr_reader :color, :bgcolor, :attributes
 
-    def initialize(color: Tambo::Color.new, bgcolor: Tambo::Color.new)
+    def initialize(color: Tambo::Color.new, bgcolor: Tambo::Color.new, attributes: 0)
       @color = color
       @bgcolor = bgcolor
+      @attributes = attributes
       yield self if block_given?
     end
 
-    def color=(color)
-      color =
-        if color.is_a?(Tambo::Color)
-          color
-        else
-          Tambo::Color.new(color)
-        end
-
-      @color = color
+    def color=(new_color)
+      @color = Color.parse(new_color)
     end
 
-    def bgcolor=(color)
-      c =
-        if color.is_a?(Tambo::Color)
-          color
-        else
-          Tambo::Color.new(color)
-        end
-      @bgcolor = color
+    def bgcolor=(new_bgcolor)
+      @bgcolor = Color.parse(new_bgcolor)
     end
   end
 end

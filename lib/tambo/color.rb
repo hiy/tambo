@@ -1,13 +1,21 @@
 # frozen_string_literal: true
 
 module Tambo
-  ANSI_COLORS = {
-    "blue": 4,
-    "white": 7
-  }.freeze
-
   class Color
     attr_accessor :name, :number
+
+    class << self
+      def parse(color)
+        case color
+        when String
+          new(name: color)
+        when Integer
+          new(number: color)
+        when Tambo::Color
+          color
+        end
+      end
+    end
 
     def initialize(name: nil, number: 0)
       @name = name

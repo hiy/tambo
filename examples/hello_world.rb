@@ -24,8 +24,8 @@ begin
 
   console.style =
     Tambo::Style.new do |style|
-      style.color = Tambo::Color.new(name: :white)
-      style.bgcolor = Tambo::Color.new(name: :blue)
+      style.color = Tambo::Color.new(name: :magenta)
+      style.bgcolor = Tambo::Color.new(name: :black)
     end
 
   display_hello_world(console)

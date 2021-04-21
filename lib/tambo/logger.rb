@@ -29,10 +29,10 @@ module Tambo
       end
     end
 
-    def self.backtrace(e)
+    def self.backtrace(error)
       File.open("#{Dir.pwd}/log/debug.log", "a") do |f|
-        f.write e
-        e.backtrace.each do |str|
+        f.write error
+        error.backtrace.each do |str|
           f.write "#{str}\n"
         end
       end
