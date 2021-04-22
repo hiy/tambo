@@ -5,8 +5,8 @@ module Tambo
     attr_reader :color, :bgcolor, :attributes
 
     def initialize(color: Tambo::Color.new, bgcolor: Tambo::Color.new, attributes: 0)
-      @color = color
-      @bgcolor = bgcolor
+      @color = Color.parse color
+      @bgcolor = Color.parse bgcolor
       @attributes = attributes
       yield self if block_given?
     end

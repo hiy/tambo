@@ -2,9 +2,13 @@
 
 require "tambo"
 
+
+
 def display_hello_world(console)
   width, height = console.size
 
+  # align left center right
+  # vertical top middle bottom
   start_x = width / 2 - 7
   start_y = height / 2
   text = Tambo::Text.new("Hello World!", start_x, start_y, console.style)
@@ -21,12 +25,7 @@ end
 
 begin
   console = Tambo::Console.new
-
-  console.style =
-    Tambo::Style.new do |style|
-      style.color = Tambo::Color.new(name: :magenta)
-      style.bgcolor = Tambo::Color.new(name: :black)
-    end
+  console.style = Tambo::Style.new(color: :magenta, bgcolor: :white)
 
   display_hello_world(console)
 

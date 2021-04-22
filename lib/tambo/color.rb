@@ -7,7 +7,7 @@ module Tambo
     class << self
       def parse(color)
         case color
-        when String
+        when String, Symbol
           new(name: color)
         when Integer
           new(number: color)
